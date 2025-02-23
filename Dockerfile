@@ -1,5 +1,5 @@
 # Utiliser une image de base officielle Node.js
-FROM node:14
+FROM node:18 AS builder
 
 # Définir le répertoire de travail dans l'image Docker
 WORKDIR /app
@@ -16,8 +16,11 @@ COPY . .
 # Construire le projet Vite React
 RUN npm run build
 
-# Exposer le port sur lequel l'application s'exécute
-EXPOSE 3000
+# Utiliser une image plus légère pour exécuter le serveur
+FROM nginx:alpine
 
-# Commande pour démarrer l'application
-CMD ["npm", "start"]
+# Copier les fichiers de build dans le répertoire de nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+#Lancer nginx
+CMD ["nginx", "-g", "daemon off;"]
